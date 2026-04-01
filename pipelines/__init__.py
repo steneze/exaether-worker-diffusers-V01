@@ -16,8 +16,8 @@ import torch
 
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = os.getenv("MODEL_DIR", "/runpod-volume/models")
-LORA_DIR = os.getenv("LORA_DIR", "/runpod-volume/loras")
+MODEL_DIR = os.getenv("MODEL_DIR", "/workspace/models")
+LORA_DIR = os.getenv("LORA_DIR", "/workspace/loras")
 
 # Min free VRAM (GB) to keep as headroom for inference (activations, etc.)
 VRAM_HEADROOM_GB = float(os.getenv("VRAM_HEADROOM_GB", "4.0"))

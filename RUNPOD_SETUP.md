@@ -24,18 +24,18 @@ Telecharge ~90GB :
 Verifier a la fin :
 
 ```bash
-du -sh /runpod-volume/models/*/* /runpod-volume/loras/*
+du -sh /workspace/models/*/* /workspace/loras/*
 ```
 
 Resultat attendu :
 
 ```
-~57G /runpod-volume/models/lightx2v/Qwen-Image-Edit-Causal
-~30G /runpod-volume/models/Qwen/Qwen-Image
-1.7G /runpod-volume/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-fp32.safetensors
-1.7G /runpod-volume/loras/Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors
-1.7G /runpod-volume/loras/Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors
-1.7G /runpod-volume/loras/Qwen-Image-2512-Lightning-8steps-V1.0-fp32.safetensors
+~57G /workspace/models/lightx2v/Qwen-Image-Edit-Causal
+~30G /workspace/models/Qwen/Qwen-Image
+1.7G /workspace/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-fp32.safetensors
+1.7G /workspace/loras/Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors
+1.7G /workspace/loras/Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors
+1.7G /workspace/loras/Qwen-Image-2512-Lightning-8steps-V1.0-fp32.safetensors
 ```
 
 **Terminer le pod** une fois le download fini.
@@ -54,7 +54,7 @@ RunPod Console → Serverless → New Endpoint → **Custom Deployment** :
 | Idle timeout | 5s (defaut) |
 | Execution timeout | 300s |
 
-Pas de variable d'environnement requise — les paths par defaut (`/runpod-volume/models`, `/runpod-volume/loras`) correspondent au volume.
+Pas de variable d'environnement requise — les paths par defaut (`/workspace/models`, `/workspace/loras`) correspondent au volume.
 
 ## 4. Configurer le backend ExAether
 
@@ -103,7 +103,7 @@ RunPod Console → Endpoint → Settings → **Rebuild**.
 
 | Probleme | Solution |
 |----------|----------|
-| `No such file or directory: /runpod-volume/models/...` | Volume pas monte ou modeles pas telecharges. Verifier avec un pod temporaire. |
+| `No such file or directory: /workspace/models/...` | Volume pas monte ou modeles pas telecharges. Verifier avec un pod temporaire. |
 | `CUDA out of memory` | Le modele ne rentre pas. Verifier le GPU (A6000 48GB min). |
 | Timeout au premier appel | Normal — le lazy loading du premier modele prend 2-3min. Augmenter execution timeout si besoin. |
-| LoRA not found | Verifier que le nom de fichier dans la requete correspond exactement au fichier dans `/runpod-volume/loras/`. |
+| LoRA not found | Verifier que le nom de fichier dans la requete correspond exactement au fichier dans `/workspace/loras/`. |

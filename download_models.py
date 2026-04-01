@@ -5,7 +5,7 @@ Run this ONCE on a RunPod GPU pod with the volume mounted:
   python download_models.py
 
 Volume layout:
-  /runpod-volume/
+  /workspace/
   ├── models/
   │   ├── lightx2v/
   │   │   └── Qwen-Image-Edit-Causal/   (edit + inpaint, ~57GB)
@@ -22,8 +22,8 @@ Each HuggingFace model is self-contained (VAE, CLIP, scheduler included).
 import os
 import sys
 
-MODEL_DIR = os.getenv("MODEL_DIR", "/runpod-volume/models")
-LORA_DIR = os.getenv("LORA_DIR", "/runpod-volume/loras")
+MODEL_DIR = os.getenv("MODEL_DIR", "/workspace/models")
+LORA_DIR = os.getenv("LORA_DIR", "/workspace/loras")
 
 # HuggingFace models (repo_id -> local subdirectory under MODEL_DIR)
 MODELS = {
