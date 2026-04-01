@@ -11,7 +11,7 @@ COPY pipelines/ pipelines/
 
 # Defaults — override per endpoint
 ENV MODEL_FAMILY=qwen_edit
-ENV MODEL_DIR=/runpod-volume/models
-ENV LORA_DIR=/runpod-volume/loras
+ENV MODEL_DIR=/runpod-volume/models/diffusers
+ENV LORA_DIR=/runpod-volume/models/loras
 
 CMD ["python", "-u", "handler.py"]

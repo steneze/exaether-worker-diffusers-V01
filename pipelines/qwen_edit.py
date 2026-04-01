@@ -24,8 +24,8 @@ from utils import (
 
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = os.getenv("MODEL_DIR", "/runpod-volume/models")
-LORA_DIR = os.getenv("LORA_DIR", "/runpod-volume/loras")
+MODEL_DIR = os.getenv("MODEL_DIR", "/runpod-volume/models/diffusers")
+LORA_DIR = os.getenv("LORA_DIR", "/runpod-volume/models/loras")
 
 # ---------------------------------------------------------------------------
 # Model loading (at import time = RunPod container startup)
