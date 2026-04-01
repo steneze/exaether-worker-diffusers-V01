@@ -4,18 +4,20 @@ Download HuggingFace models and LoRAs to the RunPod network volume.
 Run this ONCE on a RunPod GPU pod with the volume mounted:
   python download_models.py
 
-Volume layout (clean, no ComfyUI legacy):
+Volume layout:
   /runpod-volume/
   ├── models/
+  │   ├── lightx2v/
+  │   │   └── Qwen-Image-Edit-Causal/   (edit + inpaint, ~57GB)
   │   └── Qwen/
-  │       ├── Qwen-Image-Edit-2511/   (edit + inpaint, ~30GB)
-  │       └── Qwen-Image/             (T2I, ~30GB — uncomment when needed)
+  │       └── Qwen-Image/               (T2I, ~30GB)
   └── loras/
-      ├── Qwen-Image-EDIT-2511-Lightning-4steps-V1.0-bf16.safetensors
-      └── Qwen-Image-2512-Lightning-8steps-V1.0-bf16.safetensors
+      ├── Qwen-Image-Edit-2511-Lightning-4steps-V1.0-fp32.safetensors
+      ├── Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors
+      ├── Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors
+      └── Qwen-Image-2512-Lightning-8steps-V1.0-fp32.safetensors
 
-Each HuggingFace model is self-contained (includes VAE, CLIP, scheduler, etc.).
-No separate vae/ or clip/ directories needed.
+Each HuggingFace model is self-contained (VAE, CLIP, scheduler included).
 """
 import os
 import sys
@@ -23,25 +25,33 @@ import sys
 MODEL_DIR = os.getenv("MODEL_DIR", "/runpod-volume/models")
 LORA_DIR = os.getenv("LORA_DIR", "/runpod-volume/loras")
 
-# HuggingFace models to download (repo_id -> local subdirectory)
+# HuggingFace models (repo_id -> local subdirectory under MODEL_DIR)
 MODELS = {
-    # Qwen Edit — used for edit (no mask) + inpaint_edit (with mask)
-    "Qwen/Qwen-Image-Edit-2511": "Qwen/Qwen-Image-Edit-2511",
-
-    # Qwen T2I — uncomment when ready to deploy T2I endpoint
-    # "Qwen/Qwen-Image": "Qwen/Qwen-Image",
+    # Edit Causal (LightX2V) — edit + inpaint, block causal attention
+    "lightx2v/Qwen-Image-Edit-Causal": "lightx2v/Qwen-Image-Edit-Causal",
+    # Qwen T2I
+    "Qwen/Qwen-Image": "Qwen/Qwen-Image",
 }
 
-# LoRAs to download (repo_id, filename) -> local filename
-# These are individual safetensors files, not full repos
+# LoRAs — (repo_id, filename) -> local filename in LORA_DIR
 LORAS = {
-    # 4-step Lightning for Qwen Edit
-    ("Qwen/Qwen-Image-Edit-2511", "Qwen-Image-EDIT-2511-Lightning-4steps-V1.0-bf16.safetensors"):
-        "Qwen-Image-EDIT-2511-Lightning-4steps-V1.0-bf16.safetensors",
+    # Edit Lightning LoRAs (fp32)
+    ("lightx2v/Qwen-Image-Edit-2511-Lightning",
+     "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-fp32.safetensors"):
+        "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-fp32.safetensors",
 
-    # 8-step Lightning for Qwen Edit/T2I
-    ("Qwen/Qwen-Image-Edit-2511", "Qwen-Image-2512-Lightning-8steps-V1.0-bf16.safetensors"):
-        "Qwen-Image-2512-Lightning-8steps-V1.0-bf16.safetensors",
+    ("lightx2v/Qwen-Image-Edit-2511-Lightning",
+     "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors"):
+        "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors",
+
+    # T2I Lightning LoRAs (fp32)
+    ("lightx2v/Qwen-Image-2512-Lightning",
+     "Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors"):
+        "Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors",
+
+    ("lightx2v/Qwen-Image-2512-Lightning",
+     "Qwen-Image-2512-Lightning-8steps-V1.0-fp32.safetensors"):
+        "Qwen-Image-2512-Lightning-8steps-V1.0-fp32.safetensors",
 }
 
 
@@ -66,7 +76,7 @@ def main():
             continue
 
         print(f"Downloading {repo_id} -> {local_dir}")
-        print("This may take a while (~30GB)...\n")
+        print("This may take a while...\n")
 
         snapshot_download(
             repo_id=repo_id,
@@ -85,32 +95,32 @@ def main():
             print(f"SKIP: {local_name} (already exists)")
             continue
 
-        print(f"Downloading {repo_id}/{filename} -> {local_path}")
+        print(f"Downloading {repo_id}/{filename}")
         hf_hub_download(
             repo_id=repo_id,
             filename=filename,
             local_dir=LORA_DIR,
         )
-        # hf_hub_download may nest the file; move if needed
-        nested = os.path.join(LORA_DIR, filename)
-        if nested != local_path and os.path.exists(nested):
-            os.rename(nested, local_path)
         print(f"DONE: {local_name}\n")
 
     # --- Summary ---
     print("\n=== Summary ===")
-    print(f"Models: {MODEL_DIR}")
+    print(f"\nModels ({MODEL_DIR}):")
     for d in sorted(os.listdir(MODEL_DIR)):
         full = os.path.join(MODEL_DIR, d)
         if os.path.isdir(full):
             print(f"  {d}/")
             for sub in sorted(os.listdir(full)):
-                print(f"    {sub}/")
+                subpath = os.path.join(full, sub)
+                if os.path.isdir(subpath):
+                    print(f"    {sub}/")
 
-    print(f"\nLoRAs: {LORA_DIR}")
+    print(f"\nLoRAs ({LORA_DIR}):")
     for f in sorted(os.listdir(LORA_DIR)):
-        size_mb = os.path.getsize(os.path.join(LORA_DIR, f)) / 1e6
-        print(f"  {f} ({size_mb:.0f} MB)")
+        fpath = os.path.join(LORA_DIR, f)
+        if os.path.isfile(fpath):
+            size_mb = os.path.getsize(fpath) / 1e6
+            print(f"  {f} ({size_mb:.0f} MB)")
 
 
 if __name__ == "__main__":
