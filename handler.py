@@ -11,16 +11,31 @@ import logging
 import queue
 import threading
 
+import sys
 import torch
 import runpod
-
-from pipelines import model_manager
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# --- Diagnostic: log versions at startup ---
+logger.info(f"Python: {sys.version}")
+logger.info(f"PyTorch: {torch.__version__}")
+logger.info(f"CUDA available: {torch.cuda.is_available()}")
+if torch.cuda.is_available():
+    logger.info(f"CUDA version: {torch.version.cuda}")
+    logger.info(f"GPU: {torch.cuda.get_device_name(0)}")
+try:
+    import diffusers
+    logger.info(f"Diffusers: {diffusers.__version__}")
+except Exception as e:
+    logger.error(f"Diffusers import FAILED: {e}")
+# --- End diagnostic ---
+
+from pipelines import model_manager
 
 
 def streaming_handler(job):
