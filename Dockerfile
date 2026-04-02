@@ -10,8 +10,8 @@ COPY utils.py .
 COPY pipelines/ pipelines/
 
 # Volume paths
-ENV MODEL_DIR=/workspace/models
-ENV LORA_DIR=/workspace/loras
+ENV MODEL_DIR=/runpod-volume/models
+ENV LORA_DIR=/runpod-volume/loras
 ENV VRAM_HEADROOM_GB=4.0
 
 CMD ["python", "-u", "handler.py"]
