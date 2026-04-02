@@ -1,5 +1,5 @@
 runpod>=1.7.0
-git+https://github.com/huggingface/diffusers.git
+diffusers==0.37.1
 transformers>=4.45.0
 accelerate>=0.34.0
 qwen-vl-utils
